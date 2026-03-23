@@ -1,0 +1,11 @@
+// StructStudio C resource file.
+// Embeds the Common Controls v6 manifest required by libui-ng static builds.
+#include "../../include/ui/windows_resources.h"
+
+IDI_APP ICON "../../assets/icons/structstudio_classic.ico"
+IDI_DIALOG_INFO ICON "../../assets/icons/dialogs/dialog_info.ico"
+IDI_DIALOG_WARNING ICON "../../assets/icons/dialogs/dialog_warning.ico"
+IDI_DIALOG_ERROR ICON "../../assets/icons/dialogs/dialog_error.ico"
+IDI_DIALOG_THEORY ICON "../../assets/icons/dialogs/dialog_theory.ico"
+IDI_DIALOG_QUESTION ICON "../../assets/icons/dialogs/dialog_question.ico"
+1 24 "app.manifest"

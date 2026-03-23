@@ -1,0 +1,73 @@
+{
+  "format_version": 1,
+  "document": {
+    "metadata": {
+      "document_id": "doc_demo",
+      "name": "grafo_demo",
+      "description": "Muestra inicial",
+      "created_at": "2026-03-19T12:00:00",
+      "updated_at": "2026-03-19T12:00:00"
+    },
+    "active_structure_id": "structure_demo",
+    "view_state": {
+      "show_grid": true,
+      "left_panel_visible": true,
+      "right_panel_visible": true,
+      "canvas_offset_x": 0,
+      "canvas_offset_y": 0
+    },
+    "structures": [
+      {
+        "structure_id": "structure_demo",
+        "family": "graph",
+        "variant": "directed_weighted_graph",
+        "config": {
+          "is_directed": true,
+          "is_weighted": true,
+          "is_circular": false,
+          "show_indices": false,
+          "capacity": 8,
+          "heap_is_min": false
+        },
+        "visual_state": {
+          "layout_mode": "manual",
+          "show_labels": true,
+          "show_weights": true,
+          "show_indices": false
+        },
+        "nodes": [
+          {
+            "node_id": "a",
+            "kind": "graph_vertex",
+            "label": "A",
+            "value": "A",
+            "value_type": "string",
+            "visual": { "x": 220, "y": 140, "width": 74, "height": 74 },
+            "data": { "key": "", "aux_text": "", "ref_a": "", "ref_b": "", "ref_c": "", "priority": 0, "index_hint": 0 }
+          },
+          {
+            "node_id": "b",
+            "kind": "graph_vertex",
+            "label": "B",
+            "value": "B",
+            "value_type": "string",
+            "visual": { "x": 420, "y": 240, "width": 74, "height": 74 },
+            "data": { "key": "", "aux_text": "", "ref_a": "", "ref_b": "", "ref_c": "", "priority": 0, "index_hint": 0 }
+          }
+        ],
+        "edges": [
+          {
+            "edge_id": "e1",
+            "source_node_id": "a",
+            "target_node_id": "b",
+            "relation_kind": "graph_link",
+            "is_directed": true,
+            "weight": 5,
+            "visual": { "show_arrow": true, "show_weight": true },
+            "data": {}
+          }
+        ]
+      }
+    ]
+  }
+}

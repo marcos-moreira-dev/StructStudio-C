@@ -1,0 +1,75 @@
+# Build outputs
+build/
+build-*/
+build*/
+out/
+dist/
+
+# Runner artifacts and local logs
+artifacts/
+*.log
+*.tmp
+*.cache
+
+# Native binaries and objects
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.o
+*.obj
+*.out
+*.pdb
+*.ilk
+*.exp
+
+# CMake / Ninja / Meson generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+.ninja_deps
+.ninja_log
+.ninja_lock
+meson-info/
+meson-logs/
+meson-private/
+
+# Editor / IDE noise
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.vcxproj.user
+
+# OS noise
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Crash dumps
+*.stackdump
+*.dmp
+
+# Generated screenshots or exports created outside tracked asset folders
+*.png
+*.jpg
+*.jpeg
+*.webp
+!assets/**/*.png
+!assets/**/*.jpg
+!assets/**/*.jpeg
+!assets/**/*.webp
+!images/**/*.png
+!images/**/*.jpg
+!images/**/*.jpeg
+!images/**/*.webp
+!samples/**/*.png
+!samples/**/*.jpg
+!samples/**/*.jpeg
+!samples/**/*.webp
