@@ -15,6 +15,7 @@ endif()
 
 find_program(PYTHON_RUNTIME NAMES python3 python REQUIRED)
 find_program(NINJA_EXECUTABLE ninja REQUIRED)
+find_program(MAKENSIS_EXECUTABLE makensis)
 
 set(LIBUI_SOURCE_DIR "${CMAKE_SOURCE_DIR}/external/libui-ng")
 set(LIBUI_BINARY_DIR "${CMAKE_BINARY_DIR}/_deps/libui-ng-build")
@@ -134,6 +135,35 @@ add_executable(StructStudioC ${STRUCTSTUDIO_APP_SOURCES})
 target_include_directories(StructStudioC PRIVATE include)
 target_link_libraries(StructStudioC PRIVATE structstudio_ui)
 
+install(TARGETS StructStudioC
+    RUNTIME DESTINATION .
+    BUNDLE DESTINATION .
+)
+
+install(FILES
+    README.md
+    DESTINATION .
+)
+
+install(DIRECTORY
+    samples/
+    DESTINATION samples
+    FILES_MATCHING
+        PATTERN "*.json"
+)
+
+install(DIRECTORY
+    docs/
+    DESTINATION docs
+    FILES_MATCHING
+        PATTERN "*.md"
+)
+
+install(FILES
+    assets/icons/structstudio_classic.ico
+    DESTINATION assets/icons
+)
+
 add_executable(structstudio_core_smoke tests/core_smoke.c)
 target_include_directories(structstudio_core_smoke PRIVATE include)
 target_link_libraries(structstudio_core_smoke PRIVATE structstudio_editor)
@@ -203,3 +233,35 @@ enable_project_warnings(structstudio_theory_smoke)
 enable_project_warnings(structstudio_examples_smoke)
 enable_project_warnings(structstudio_animation_smoke)
 enable_project_warnings(structstudio_transform_smoke)
+
+set(CPACK_PACKAGE_NAME "StructStudio C")
+set(CPACK_PACKAGE_VENDOR "StructStudio C")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Editor desktop en C para crear, analizar y estudiar estructuras de datos.")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "StructStudio C")
+set(CPACK_PACKAGE_CHECKSUM SHA256)
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_MONOLITHIC_INSTALL ON)
+set(CPACK_PACKAGE_EXECUTABLES "StructStudioC" "StructStudio C")
+set(CPACK_CREATE_DESKTOP_LINKS "StructStudioC")
+
+if(WIN32)
+    set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/images/Struct Studio C.png")
+    set(CPACK_NSIS_DISPLAY_NAME "StructStudio C")
+    set(CPACK_NSIS_PACKAGE_NAME "StructStudio C")
+    set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/assets/icons/structstudio_classic.ico")
+    set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/assets/icons/structstudio_classic.ico")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "StructStudioC.exe")
+    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+    set(CPACK_NSIS_MODIFY_PATH OFF)
+    set(CPACK_NSIS_CONTACT "StructStudio C")
+    if(MAKENSIS_EXECUTABLE)
+        set(CPACK_GENERATOR "NSIS;ZIP")
+    else()
+        set(CPACK_GENERATOR "ZIP")
+    endif()
+elseif(UNIX AND NOT APPLE)
+    set(CPACK_GENERATOR "TGZ")
+endif()
+
+include(CPack)
