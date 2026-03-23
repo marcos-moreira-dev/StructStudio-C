@@ -1,8 +1,20 @@
+/*
+ * StructStudio C
+ * --------------
+ * Static model catalog and ownership helpers.
+ *
+ * This is one of the lowest layers of the codebase. It defines the canonical
+ * descriptor table for variants and centralizes clone/init/free operations so
+ * upper layers do not duplicate memory-management logic.
+ */
+
 #include "core/model.h"
 
 #include <stdlib.h>
 #include <string.h>
 
+/* The descriptor table behaves like a compact metadata database for all
+ * variants supported by the system. */
 static const SsVariantDescriptor SS_VARIANTS[SS_VARIANT_COUNT] = {
     { SS_VARIANT_VECTOR, SS_FAMILY_VECTOR, "vector", "Vector", "Insertar", "Reemplazar", "Eliminar", 0, 0 },
     { SS_VARIANT_SINGLY_LINKED_LIST, SS_FAMILY_LIST, "singly_linked_list", "Lista simple", "Inicio", "Final", "Después", 0, 0 },

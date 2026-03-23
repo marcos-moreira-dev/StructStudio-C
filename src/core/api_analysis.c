@@ -22,6 +22,9 @@ typedef struct SsAnalysisAppendState {
     int first;
 } SsAnalysisAppendState;
 
+/* The textual report is still a first-class educational output, so these
+ * helpers assemble human-readable traversals without exposing raw buffers to
+ * every algorithm implementation. */
 static void ss_analysis_append_text(char *buffer, size_t capacity, const char *text)
 {
     size_t length;
@@ -54,6 +57,8 @@ static void ss_analysis_append_node_display(SsAnalysisAppendState *state, const 
 {
     char text[SS_VALUE_CAPACITY + SS_LABEL_CAPACITY];
 
+    /* Reports prefer a visible label, then a value, and only fall back to the
+     * technical node ID if there is no better human-facing token. */
     if (state == NULL || node == NULL) {
         return;
     }
@@ -81,6 +86,9 @@ static void ss_tree_preorder(
 {
     const SsNode *node = ss_structure_find_node_const(structure, node_id);
 
+    /* Recursive traversals are kept explicit instead of compressed into one
+     * generic walker because that is easier to study in a data-structures
+     * course. */
     if (node == NULL) {
         return;
     }
@@ -144,6 +152,8 @@ static void ss_tree_level_order(
     size_t tail = 0;
     size_t capacity = structure->node_count == 0 ? 1 : structure->node_count;
 
+    /* Level-order uses a simple queue over node IDs. This mirrors the standard
+     * breadth-first idea without introducing a separate queue abstraction. */
     queue = (char **) calloc(capacity, sizeof(*queue));
     if (queue == NULL) {
         return;
@@ -177,6 +187,8 @@ static void ss_graph_neighbors(
     size_t count = 0;
     const char *node_id = structure->nodes[node_index].id;
 
+    /* Graph traversals repeatedly need neighbor lists. Building them through
+     * edges here keeps BFS/DFS code smaller and more readable. */
     for (size_t edge_index = 0; edge_index < structure->edge_count; ++edge_index) {
         const SsEdge *edge = &structure->edges[edge_index];
 
@@ -205,6 +217,8 @@ static void ss_graph_dfs_recursive(
     size_t *neighbors;
     size_t neighbor_count = 0;
 
+    /* DFS stays recursive because the goal is pedagogical readability, not
+     * squeezing every last byte of stack usage in this classroom-scale app. */
     visited[node_index] = 1;
     ss_analysis_append_node_display(state, &structure->nodes[node_index]);
 
@@ -232,6 +246,8 @@ static int ss_run_tree_analysis(
     SsAnalysisAppendState state;
     const char *root_id = start_node_id != NULL && start_node_id[0] != '\0' ? start_node_id : structure->root_id;
 
+    /* Tree analyses share one dispatcher that selects the traversal flavor and
+     * emits a stable textual summary. */
     if (structure->node_count == 0 || root_id[0] == '\0') {
         ss_str_copy(report, report_capacity, "La estructura arborea esta vacia.");
         ss_error_clear(error);

@@ -1,3 +1,13 @@
+/*
+ * StructStudio C
+ * --------------
+ * Rendering contracts.
+ *
+ * The renderer receives editor snapshots and paints them. It does not decide
+ * semantics such as "what insert means"; it only turns current state into
+ * pixels and mirrors the same geometry for hit-testing.
+ */
+
 #ifndef SS_RENDER_RENDER_H
 #define SS_RENDER_RENDER_H
 
@@ -5,6 +15,8 @@
 
 #include "editor/editor.h"
 
+/* The theme is shared by live drawing and PNG export so screenshots and saved
+ * images stay visually aligned. */
 typedef struct SsTheme {
     uint32_t canvas_top;
     uint32_t canvas_bottom;
@@ -38,6 +50,8 @@ typedef enum SsHitType {
     SS_HIT_EDGE
 } SsHitType;
 
+/* Hit-testing reports what the mouse touched. The editor then decides whether
+ * to select, drag, connect or delete that entity. */
 typedef struct SsHitResult {
     SsHitType type;
     char id[SS_ID_CAPACITY];

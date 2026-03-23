@@ -26,6 +26,8 @@ int ss_structure_apply_secondary(
     int values[256];
     size_t count;
 
+    /* Secondary actions usually complement the primary one: tail insert,
+     * dequeue, search or connect, depending on the active TDA. */
     if (structure == NULL) {
         ss_error_set(error, SS_ERROR_ARGUMENT, "No hay estructura activa.");
         return 0;
@@ -33,6 +35,7 @@ int ss_structure_apply_secondary(
 
     switch (structure->variant) {
         case SS_VARIANT_VECTOR:
+            /* Vector secondary action behaves like "replace at index". */
             if (!ss_format_numeric_input(primary, numeric_value, &value, error)) {
                 return 0;
             }
@@ -48,6 +51,7 @@ int ss_structure_apply_secondary(
         case SS_VARIANT_DOUBLY_LINKED_LIST:
         case SS_VARIANT_CIRCULAR_SINGLY_LINKED_LIST:
         case SS_VARIANT_CIRCULAR_DOUBLY_LINKED_LIST:
+            /* Linked-list secondary action inserts at the tail. */
         {
             SsNode *tail = ss_insert_node_at(structure, structure->node_count, primary, error);
             if (tail == NULL) {
@@ -121,6 +125,8 @@ int ss_structure_apply_secondary(
         case SS_VARIANT_BST:
         {
             SsNode *current;
+            /* BST secondary action is search. The traversal is explicit here so
+             * students can follow the branch decisions line by line. */
             if (!ss_format_numeric_input(primary, numeric_value, &value, error)) {
                 return 0;
             }
@@ -144,6 +150,8 @@ int ss_structure_apply_secondary(
         }
 
         case SS_VARIANT_AVL:
+            /* AVL secondary action removes a value and rebuilds the balanced
+             * tree from the remaining set. */
             if (structure->node_count == 0 || !ss_collect_int_values(structure, values, 256)) {
                 ss_error_set(error, SS_ERROR_VALIDATION, "AVL contiene valores invalidos.");
                 return 0;
@@ -212,6 +220,8 @@ int ss_structure_apply_secondary(
         {
             const SsNode *target;
 
+            /* Graph secondary action creates an edge from the currently
+             * selected source node to a destination resolved by token. */
             if (selected_node_id == NULL || selected_node_id[0] == '\0' || secondary == NULL || secondary[0] == '\0') {
                 ss_error_set(error, SS_ERROR_VALIDATION, "Seleccione un vertice y escriba un destino por ID, etiqueta o valor en el campo secundario.");
                 return 0;

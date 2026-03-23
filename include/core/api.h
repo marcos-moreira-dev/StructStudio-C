@@ -1,8 +1,21 @@
+/*
+ * StructStudio C
+ * --------------
+ * Public semantic operations.
+ *
+ * This API is the boundary between widgets/editor state and the actual domain
+ * rules of each TDA. If a student wants to know "where the real operation
+ * happens", this is the header to start reading.
+ */
+
 #ifndef SS_CORE_API_H
 #define SS_CORE_API_H
 
 #include "core/model.h"
 
+/* The analysis selector in the UI eventually resolves to one of these stable
+ * identifiers, and the same identifier can drive textual reports, playback and
+ * derived-structure generation. */
 typedef enum SsAnalysisKind {
     SS_ANALYSIS_NONE = 0,
     SS_ANALYSIS_TREE_PREORDER,
@@ -17,12 +30,17 @@ typedef enum SsAnalysisKind {
     SS_ANALYSIS_GRAPH_KRUSKAL
 } SsAnalysisKind;
 
+/* Some algorithms need an origin node, some accept it optionally, and others
+ * simply ignore it. The UI reads this contract to enable or disable controls. */
 typedef enum SsAnalysisStartMode {
     SS_ANALYSIS_START_NONE = 0,
     SS_ANALYSIS_START_OPTIONAL,
     SS_ANALYSIS_START_REQUIRED
 } SsAnalysisStartMode;
 
+/* The playback engine does not need to know the full algorithm internals. It
+ * only needs a compact event type telling it whether a node/edge is being
+ * visited, discovered, relaxed or finalized. */
 typedef enum SsAnalysisStepKind {
     SS_ANALYSIS_STEP_VISIT = 0,
     SS_ANALYSIS_STEP_DISCOVER,

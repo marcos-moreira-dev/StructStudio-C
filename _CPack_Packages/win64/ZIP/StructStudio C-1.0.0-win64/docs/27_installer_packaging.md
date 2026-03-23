@@ -1,41 +1,43 @@
 # 27_installer_packaging.md
 
-## 1. Propósito
+## 1. Proposito
 
-Este documento explica cómo generar un instalador o paquete distribuible de StructStudio C.
+Este documento resume como se empaqueta StructStudio C para distribucion.
 
-La integración actual está resuelta desde `CMake` + `CPack`, sin depender de pasos manuales dispersos.
+La integracion actual usa:
 
----
+- `CMake`
+- `install()`
+- `CPack`
+- `NSIS` en Windows cuando esta disponible
 
-## 2. Qué genera hoy el sistema
+La idea es evitar pasos manuales dispersos y mantener el empaquetado alineado con el build real del proyecto.
+
+## 2. Que genera hoy el sistema
 
 En Windows:
 
-- si `NSIS` está instalado, `CPack` genera un instalador `.exe` y además un `.zip` portable;
-- si `NSIS` no está instalado, `CPack` genera al menos un `.zip` portable.
+- si `NSIS` esta instalado, `CPack` genera un instalador `.exe`;
+- ademas genera un `.zip` portable;
+- si `NSIS` no esta instalado, al menos genera el `.zip`.
 
 En Linux:
 
-- se genera un paquete `.tgz`.
+- `CPack` queda preparado para generar un `.tgz`.
 
----
+## 3. Que incluye el paquete
 
-## 3. Qué incluye el paquete
-
-La instalación o paquete actual incluye:
+El paquete o instalador actual incluye:
 
 - `StructStudioC.exe`
 - `README.md`
 - carpeta `docs/`
 - carpeta `samples/`
-- icono principal del proyecto
+- icono principal del proyecto en `assets/icons/`
 
----
+## 4. Flujo recomendado
 
-## 4. Script recomendado en Windows
-
-Para generar el instalador con logs:
+La forma recomendada en Windows es:
 
 ```powershell
 .\scripts\build_installer.ps1
@@ -47,7 +49,7 @@ O por doble clic:
 scripts\build_installer.cmd
 ```
 
-El flujo ejecuta:
+Ese flujo ejecuta:
 
 1. `configure`
 2. `build`
@@ -60,11 +62,9 @@ Y deja logs en:
 artifacts/installer_logs/<timestamp>/
 ```
 
----
-
 ## 5. Flujo manual
 
-También puede hacerse manualmente:
+Tambien se puede hacer a mano:
 
 ```powershell
 cmake -S . -B build -G Ninja
@@ -73,21 +73,17 @@ ctest --test-dir build --output-on-failure
 cpack --config build/CPackConfig.cmake
 ```
 
----
+## 6. Decision tecnica
 
-## 6. Decisión técnica
+Se eligio `CPack` porque:
 
-Se eligió `CPack` porque:
-
-- ya forma parte del ecosistema `CMake`,
-- evita scripts ad hoc para instalación,
-- permite fallback portable sin bloquear al usuario,
-- y mantiene el empaquetado ligado al build real del proyecto.
-
----
+- ya forma parte del ecosistema `CMake`;
+- reutiliza el modelo de `install()` del proyecto;
+- evita scripts artesanales para copiar archivos;
+- y permite generar varios formatos desde una misma configuracion.
 
 ## 7. Limitaciones actuales
 
-- el instalador todavía no crea una experiencia compleja de wizard personalizada;
-- el contenido instalado está enfocado en uso local y material didáctico básico;
-- si se quisiera un instalador empresarial más elaborado, habría que profundizar en `NSIS` o cambiar a una solución específica.
+- el instalador no usa un wizard muy personalizado;
+- el contenido instalado esta enfocado en uso local y estudio;
+- si en el futuro se quisiera una experiencia mas corporativa, habria que profundizar en `NSIS` o cambiar de tecnologia de instalacion.

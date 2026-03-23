@@ -103,6 +103,8 @@ typedef struct SsMainWindow {
     int syncing;
 } SsMainWindow;
 
+/* The active variant controls how the operations panel should look. This small
+ * struct lets the code describe a mode first and paint widgets second. */
 typedef struct SsOperationUiConfig {
     const char *primary_label;
     const char *secondary_label;
@@ -791,6 +793,9 @@ static void ss_force_window_layout_refresh(void)
     int width;
     int height;
 
+    /* Some libui-ng layout changes only become visible after a size nudge.
+     * Keeping that workaround isolated here prevents layout code elsewhere from
+     * accumulating platform-specific noise. */
     if (g_main_window.window == NULL) {
         return;
     }
@@ -812,6 +817,9 @@ static void ss_set_workspace_panels(int left_visible, int right_visible, const c
         g_main_window.editor.document.view_state.left_panel_visible != normalized_left_visible ||
         g_main_window.editor.document.view_state.right_panel_visible != normalized_right_visible;
 
+    /* The current product decision is to keep the left tool panel always
+     * visible. We still accept the incoming flag to remain compatible with
+     * older saved view states and with previous iterations of the UI. */
     (void) left_visible;
     g_main_window.editor.document.view_state.left_panel_visible = normalized_left_visible;
     g_main_window.editor.document.view_state.right_panel_visible = normalized_right_visible;
@@ -828,6 +836,8 @@ static void ss_sync_panel_visibility(void)
 {
     int right_visible;
 
+    /* The center canvas host is permanent. Only the theory panel is attached
+     * or detached so the canvas can expand without rebuilding the whole window. */
     g_main_window.editor.document.view_state.left_panel_visible = 1;
     if (g_main_window.left_slot != NULL) {
         uiControlShow(uiControl(g_main_window.left_slot));
@@ -1526,17 +1536,23 @@ static void ss_sync_properties(void)
 
 static void ss_after_state_change(void)
 {
+    /* Full state changes happen after semantic actions: insert, rotate,
+     * connect, load, save, tab switch, etc. */
     ss_sync_full_ui_state();
     ss_sync_animation_ui_state();
 }
 
 static void ss_after_animation_state_change(void)
 {
+    /* Animation ticks use a reduced sync path so they do not rebuild every
+     * control while a playback or layout transition is running. */
     ss_sync_animation_ui_state();
 }
 
 static void ss_sync_full_ui_state(void)
 {
+    /* This function acts like a UI reducer: it reads the editor snapshot and
+     * pushes every dependent widget into a coherent state. */
     if (g_main_window.grid_checkbox != NULL) {
         uiCheckboxSetChecked(g_main_window.grid_checkbox, g_main_window.editor.document.view_state.show_grid);
     }
@@ -1561,6 +1577,8 @@ static void ss_sync_full_ui_state(void)
 
 static void ss_sync_animation_ui_state(void)
 {
+    /* Animation refreshes only the controls that actually change every frame:
+     * playback buttons/status and the canvas repaint request. */
     ss_sync_analysis_controls();
     ss_refresh_status();
     ss_queue_canvas_refresh();
@@ -1586,6 +1604,9 @@ static void ss_canvas_insert(double x, double y)
     const char *effective_primary = primary;
     SsError error;
 
+    /* Clicking the canvas to insert reuses the same semantic operation exposed
+     * by the buttons, then optionally repositions the fresh node near the click
+     * point if the active structure supports direct manipulation. */
     if (before == NULL) {
         uiFreeText(primary);
         uiFreeText(secondary);

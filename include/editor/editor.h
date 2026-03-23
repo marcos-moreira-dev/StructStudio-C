@@ -22,6 +22,8 @@ typedef enum SsTool {
     SS_TOOL_DELETE
 } SsTool;
 
+/* Selection is normalized here so every UI gesture can talk about "the
+ * current target" without caring whether it is a node, edge or structure. */
 typedef enum SsSelectionType {
     SS_SELECTION_NONE = 0,
     SS_SELECTION_NODE,
@@ -35,6 +37,8 @@ typedef struct SsSelection {
     char edge_id[SS_ID_CAPACITY];
 } SsSelection;
 
+/* Dragging stores the grabbed node plus the mouse-to-node offset so the node
+ * does not jump when the drag starts. */
 typedef struct SsDragState {
     int is_dragging;
     int moved;
@@ -43,6 +47,7 @@ typedef struct SsDragState {
     double offset_y;
 } SsDragState;
 
+/* Pan state works like a tiny camera controller over the canvas. */
 typedef struct SsPanState {
     int is_panning;
     int moved;
@@ -52,6 +57,8 @@ typedef struct SsPanState {
     double origin_offset_y;
 } SsPanState;
 
+/* Connection mode stores the source node and a live preview line until the
+ * user clicks a valid destination or cancels the gesture. */
 typedef struct SsConnectionState {
     int is_connecting;
     char source_node_id[SS_ID_CAPACITY];
@@ -60,6 +67,7 @@ typedef struct SsConnectionState {
     int has_preview;
 } SsConnectionState;
 
+/* Playback is the semantic timeline produced by an analysis algorithm. */
 typedef struct SsAnalysisPlayback {
     SsAnalysisKind kind;
     char start_node_id[SS_ID_CAPACITY];
@@ -113,6 +121,8 @@ typedef struct SsPlaybackFx {
 
 #define SS_ROTATION_HISTORY_CAPACITY 12
 
+/* Rotation history is intentionally shallow and focused on teaching-oriented
+ * transforms instead of a full universal undo stack for every action. */
 typedef struct SsRotationHistoryEntry {
     size_t structure_index;
     SsStructure before_structure;
@@ -134,6 +144,8 @@ enum {
     SS_EDITOR_ANIMATION_STATE_CHANGED = 1 << 1
 };
 
+/* SsEditorState is the bridge between the persistent document and the
+ * transient interaction state of the GUI. */
 typedef struct SsEditorState {
     SsDocument document;
     SsTool tool;

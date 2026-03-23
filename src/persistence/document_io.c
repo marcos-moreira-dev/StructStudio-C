@@ -1,3 +1,12 @@
+/*
+ * StructStudio C
+ * --------------
+ * JSON import/export.
+ *
+ * The saved format preserves both semantics and layout because the application
+ * is didactic: students are expected to reopen the same visual arrangement.
+ */
+
 #include "persistence/document_io.h"
 
 #include <stdio.h>
@@ -10,6 +19,8 @@ static cJSON *ss_json_value_from_node(const SsNode *node)
 {
     int int_value;
 
+    /* The node model stores textual values generically, but JSON should still
+     * preserve integer payloads as numbers whenever possible. */
     if (strcmp(node->value_type, "int") == 0 && ss_parse_int(node->value, &int_value)) {
         return cJSON_CreateNumber(int_value);
     }
@@ -22,6 +33,8 @@ static void ss_json_add_node(cJSON *array, const SsNode *node)
     cJSON *visual = cJSON_CreateObject();
     cJSON *data = cJSON_CreateObject();
 
+    /* Visual placement and semantic data are serialized separately so the file
+     * explains both what the node means and where it appears on screen. */
     cJSON_AddStringToObject(json_node, "node_id", node->id);
     cJSON_AddStringToObject(json_node, "kind", node->kind);
     cJSON_AddStringToObject(json_node, "label", node->label);
@@ -78,6 +91,9 @@ int ss_document_save_json(const SsDocument *document, const char *path, SsError 
     cJSON *view_state = cJSON_CreateObject();
     cJSON *structures = cJSON_CreateArray();
 
+    /* Saving is a two-step process:
+     * 1. build the full cJSON tree in memory,
+     * 2. write the final text only if serialization succeeded. */
     if (document == NULL || path == NULL) {
         ss_error_set(error, SS_ERROR_ARGUMENT, "Ruta de guardado invalida.");
         return 0;
@@ -172,6 +188,8 @@ static int ss_json_read_file(const char *path, char **buffer, SsError *error)
     FILE *file;
     long length;
 
+    /* Whole-file loading keeps the import path easier to study than a
+     * streaming parser, which is acceptable for the document sizes here. */
     file = fopen(path, "rb");
     if (file == NULL) {
         ss_error_set(error, SS_ERROR_IO, "No se pudo abrir el archivo.");
@@ -197,6 +215,8 @@ static int ss_json_read_file(const char *path, char **buffer, SsError *error)
 
 static void ss_json_to_string(char *dest, size_t capacity, const cJSON *item)
 {
+    /* Import is forgiving: many fields can arrive either as JSON strings or
+     * numbers, but the in-memory model still normalizes them as text. */
     if (cJSON_IsString(item) && item->valuestring != NULL) {
         ss_str_copy(dest, capacity, item->valuestring);
     } else if (cJSON_IsNumber(item)) {
@@ -216,6 +236,8 @@ int ss_document_load_json(SsDocument *document, const char *path, SsError *error
     cJSON *structures;
     cJSON *active_id;
 
+    /* Load reconstructs a new document snapshot instead of trying to patch an
+     * existing one in place. That greatly simplifies ownership and recovery. */
     if (!ss_json_read_file(path, &buffer, error)) {
         return 0;
     }

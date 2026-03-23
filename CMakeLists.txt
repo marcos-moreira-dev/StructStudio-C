@@ -246,7 +246,6 @@ set(CPACK_PACKAGE_EXECUTABLES "StructStudioC" "StructStudio C")
 set(CPACK_CREATE_DESKTOP_LINKS "StructStudioC")
 
 if(WIN32)
-    set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/images/Struct Studio C.png")
     set(CPACK_NSIS_DISPLAY_NAME "StructStudio C")
     set(CPACK_NSIS_PACKAGE_NAME "StructStudio C")
     set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/assets/icons/structstudio_classic.ico")
@@ -255,6 +254,9 @@ if(WIN32)
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     set(CPACK_NSIS_MODIFY_PATH OFF)
     set(CPACK_NSIS_CONTACT "StructStudio C")
+    # CPack maps CPACK_PACKAGE_ICON to an NSIS header bitmap. Using a PNG
+    # screenshot here makes the NSIS script brittle, so the installer keeps
+    # only the product icon and avoids a custom header image.
     if(MAKENSIS_EXECUTABLE)
         set(CPACK_GENERATOR "NSIS;ZIP")
     else()

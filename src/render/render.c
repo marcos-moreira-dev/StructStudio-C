@@ -501,6 +501,8 @@ static void ss_draw_background(uiAreaDrawParams *params, const SsEditorState *ed
     double grid_origin_x = ss_grid_origin(editor->document.view_state.canvas_offset_x, grid_step);
     double grid_origin_y = ss_grid_origin(editor->document.view_state.canvas_offset_y, grid_step);
 
+    /* The background is intentionally simple. A subtle grid communicates space
+     * without turning the canvas into a heavy texture that hurts animation. */
     path = uiDrawNewPath(uiDrawFillModeWinding);
     uiDrawPathAddRectangle(path, 0, 0, params->AreaWidth, params->AreaHeight);
     uiDrawPathEnd(path);
@@ -542,10 +544,13 @@ static void ss_graph_anchor_point(const SsNode *source, const SsNode *target, in
         angle += 3.14159265359;
     }
 
+    /* For graph-style structures the relation reads more naturally when lines
+     * converge toward the visual center of the node instead of a perimeter
+     * socket. The arrowhead already communicates direction. */
     radius_x = node->visual.width / 2.0;
     radius_y = node->visual.height / 2.0;
-    *x = node->visual.x + radius_x + cos(angle) * radius_x;
-    *y = node->visual.y + radius_y + sin(angle) * radius_y;
+    *x = node->visual.x + radius_x;
+    *y = node->visual.y + radius_y;
 }
 
 static int ss_is_circular_closure_edge(const SsStructure *structure, const SsNode *source, const SsNode *target, const SsEdge *edge)
@@ -569,6 +574,8 @@ static void ss_edge_geometry_from_nodes(const SsStructure *structure, const SsNo
     double x2;
     double y2;
 
+    /* Each family connects from a different visual anchor. Centralizing those
+     * conventions here keeps drawing and hit-testing in sync. */
     memset(geometry, 0, sizeof(*geometry));
     geometry->show_arrow = ss_edge_should_draw_arrow(structure, edge);
 
@@ -637,6 +644,8 @@ static void ss_draw_edges(uiAreaDrawParams *params, const SsEditorState *editor,
     int direct_manipulation = ss_editor_is_direct_manipulation(editor);
     int playback_autoplay = ss_editor_playback_autoplay_enabled(editor);
 
+    /* Edge rendering is on the hot path. During autoplay we skip some badges
+     * so the UI thread spends more time on motion than on decoration. */
     for (size_t index = 0; index < structure->edge_count; ++index) {
         const SsEdge *edge = &structure->edges[index];
         const SsNode *source = ss_structure_find_node_const(structure, edge->source_id);
@@ -740,6 +749,8 @@ static void ss_draw_nodes(uiAreaDrawParams *params, const SsEditorState *editor,
     int playback_autoplay = ss_editor_playback_autoplay_enabled(editor);
     int reduce_detail = (direct_manipulation && structure->node_count > 96) || playback_autoplay;
 
+    /* The editor already resolved the current animated position of every node.
+     * The renderer only paints the snapshot it receives. */
     for (size_t index = 0; index < structure->node_count; ++index) {
         const SsNode *node = &structure->nodes[index];
         SsNode display_node = *node;
@@ -884,6 +895,12 @@ void ss_render_draw(uiAreaDrawParams *params, const SsEditorState *editor, const
 {
     const SsStructure *structure = ss_active_structure(editor);
 
+    /* Rendering order is deliberate:
+     * 1. background/grid,
+     * 2. edges,
+     * 3. temporary previews,
+     * 4. nodes and badges,
+     * 5. title chrome. */
     ss_draw_background(params, editor, theme);
     if (structure == NULL) {
         ss_draw_text(params->Context, "Sin estructura activa", 36.0, 36.0, 220.0, 12.0, theme->text_color);
@@ -957,6 +974,8 @@ void ss_render_hit_test(const SsEditorState *editor, double x, double y, SsHitRe
 {
     const SsStructure *structure = ss_active_structure(editor);
 
+    /* Nodes are checked before edges because node interaction is the most
+     * common user intent and should win when geometry overlaps visually. */
     memset(result, 0, sizeof(*result));
     if (structure == NULL) {
         return;

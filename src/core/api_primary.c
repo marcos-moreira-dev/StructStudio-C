@@ -26,6 +26,8 @@ int ss_structure_apply_primary(
     SsNode *node;
     int value;
 
+    /* "Primary" means the main action shown in the left panel for the active
+     * variant. The same generic button maps to different semantics here. */
     if (structure == NULL) {
         ss_error_set(error, SS_ERROR_ARGUMENT, "No hay estructura activa.");
         return 0;
@@ -33,6 +35,8 @@ int ss_structure_apply_primary(
 
     switch (structure->variant) {
         case SS_VARIANT_VECTOR:
+            /* Vectors are index-addressed. The command may grow the logical
+             * array up to the requested position before storing the new value. */
             if (!ss_format_numeric_input(primary, numeric_value, &value, error)) {
                 return 0;
             }
@@ -66,6 +70,7 @@ int ss_structure_apply_primary(
         case SS_VARIANT_DOUBLY_LINKED_LIST:
         case SS_VARIANT_CIRCULAR_SINGLY_LINKED_LIST:
         case SS_VARIANT_CIRCULAR_DOUBLY_LINKED_LIST:
+            /* For linked-list variants, primary means insert at the head. */
             node = ss_insert_node_at(structure, 0, primary, error);
             if (node == NULL) {
                 return 0;
@@ -75,6 +80,7 @@ int ss_structure_apply_primary(
             return 1;
 
         case SS_VARIANT_STACK:
+            /* Stack primary action is push at the visual/semantic top. */
             node = ss_insert_node_at(structure, structure->node_count, primary, error);
             if (node == NULL) {
                 return 0;
@@ -104,6 +110,8 @@ int ss_structure_apply_primary(
             return 1;
 
         case SS_VARIANT_BINARY_TREE:
+            /* A plain binary tree only reserves primary for creating the root.
+             * Child insertion is handled by secondary/tertiary actions. */
             if (structure->root_id[0] != '\0') {
                 ss_error_set(error, SS_ERROR_INVALID_STATE, "El arbol ya tiene raiz.");
                 return 0;
@@ -118,6 +126,8 @@ int ss_structure_apply_primary(
             return 1;
 
         case SS_VARIANT_BST:
+            /* BST/AVL/Heap rely on numeric semantics, so the generic text input
+             * is normalized into an integer before the core algorithm runs. */
             if (!ss_format_numeric_input(primary, numeric_value, &value, error)) {
                 return 0;
             }
@@ -140,8 +150,9 @@ int ss_structure_apply_primary(
                 ss_error_set(error, SS_ERROR_VALIDATION, "El AVL solo admite valores enteros en esta V1.");
                 return 0;
             }
-            /* The AVL implementation rebuilds the tree from sorted values to keep
-             * balancing logic small and predictable in this first version. */
+            /* The AVL implementation rebuilds the balanced tree from the value
+             * set. That is not the textbook incremental algorithm, but it keeps
+             * this V1 smaller and easier to study. */
             for (count = 0; count < structure->node_count; ++count) {
                 if (values[count] == value) {
                     ss_error_set(error, SS_ERROR_DUPLICATE, "No se permiten duplicados en AVL.");
@@ -210,6 +221,8 @@ int ss_structure_apply_primary(
         case SS_VARIANT_UNDIRECTED_GRAPH:
         case SS_VARIANT_DIRECTED_WEIGHTED_GRAPH:
         case SS_VARIANT_UNDIRECTED_WEIGHTED_GRAPH:
+            /* In graph variants, primary adds vertices. Edge creation lives in
+             * the secondary command so the UI can model source -> target flow. */
             node = ss_insert_node_at(structure, structure->node_count, primary, error);
             if (node == NULL) {
                 return 0;

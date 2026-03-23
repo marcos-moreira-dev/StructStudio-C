@@ -159,6 +159,9 @@ static int ss_editor_record_rotation_change(
 {
     SsRotationHistoryEntry entry;
 
+    /* Rotation history stores whole-structure snapshots on purpose. That is a
+     * little heavier in memory, but much easier to reason about while studying
+     * the code and much safer than inventing ad-hoc inverse operations. */
     if (editor == NULL || before_structure == NULL || after_structure == NULL) {
         ss_error_set(error, SS_ERROR_ARGUMENT, "No se pudo guardar el historial de rotacion.");
         return 0;
@@ -200,6 +203,8 @@ static int ss_editor_restore_rotation_structure(
     const SsStructure *snapshot;
     const char *selection_id;
 
+    /* Restoring history is still animated. The goal of undo/redo here is not
+     * just correctness, but to preserve the teaching value of the transition. */
     if (editor == NULL || entry == NULL) {
         ss_error_set(error, SS_ERROR_ARGUMENT, "No se pudo restaurar la rotacion.");
         return 0;
@@ -249,6 +254,9 @@ static void ss_editor_commit_structure_change(
         return;
     }
 
+    /* Most semantic commands in the editor share this exact lifecycle:
+     * normalize layout -> start transition -> mark document dirty ->
+     * clear transient analysis/selection context when needed. */
     if (!preserve_rotation_history) {
         ss_editor_clear_rotation_history(editor);
     }
@@ -267,6 +275,8 @@ static int ss_editor_append_built_structure(
     SsDocument *document;
     SsStructure *slot;
 
+    /* Derived structures are appended as new tabs so the source remains
+     * visible for comparison. This is pedagogically better than replacing it. */
     if (editor == NULL || built == NULL) {
         ss_error_set(error, SS_ERROR_ARGUMENT, "No se pudo anexar la estructura derivada.");
         return 0;
@@ -897,6 +907,8 @@ static int ss_editor_apply_common(int (*operation)(
     char message[SS_MESSAGE_CAPACITY] = "";
     SsLayoutSnapshot before_snapshot;
 
+    /* This helper behaves like a small transaction wrapper around core
+     * mutations so primary/secondary/tertiary actions stay consistent. */
     if (structure == NULL) {
         ss_error_set(error, SS_ERROR_INVALID_STATE, "No hay estructura activa.");
         return 0;
@@ -976,6 +988,8 @@ int ss_editor_rotate_selection_left(SsEditorState *editor, SsError *error)
     char promoted_id[SS_ID_CAPACITY];
     const SsNode *pivot;
 
+    /* The left-rotation path is semantic for trees: references are rewired in
+     * the core, then the editor only handles animation/history/selection. */
     if (editor == NULL || editor->selection.type != SS_SELECTION_NODE) {
         ss_error_set(error, SS_ERROR_INVALID_STATE, "Seleccione un nodo para rotar.");
         return 0;
@@ -1037,6 +1051,8 @@ int ss_editor_rotate_selection_right(SsEditorState *editor, SsError *error)
     char promoted_id[SS_ID_CAPACITY];
     const SsNode *pivot;
 
+    /* The right rotation mirrors the left rotation and exists separately
+     * because the promoted child and status message differ. */
     if (editor == NULL || editor->selection.type != SS_SELECTION_NODE) {
         ss_error_set(error, SS_ERROR_INVALID_STATE, "Seleccione un nodo para rotar.");
         return 0;
@@ -1096,6 +1112,8 @@ static int ss_editor_rotate_graph_common(SsEditorState *editor, double radians, 
     SsStructure before_structure;
     const char *pivot_id = NULL;
 
+    /* Graph rotation changes only coordinates, not topology. Even so, it goes
+     * through the same history/animation infrastructure as tree rotations. */
     if (editor == NULL) {
         ss_error_set(error, SS_ERROR_INVALID_STATE, "No hay editor activo.");
         return 0;
@@ -1259,6 +1277,8 @@ void ss_editor_pan_to(SsEditorState *editor, double mouse_x, double mouse_y)
     double next_x;
     double next_y;
 
+    /* Panning is in the mouse-move hot path, so it only updates camera
+     * offsets and avoids any heavy document synchronization. */
     if (editor == NULL || !editor->pan.is_panning) {
         return;
     }
@@ -1346,6 +1366,8 @@ void ss_editor_drag_to(SsEditorState *editor, double mouse_x, double mouse_y)
     SsStructure *structure = ss_document_active_structure(&editor->document);
     SsNode *node;
 
+    /* Dragging modifies only node visuals in real time. The expensive work
+     * such as touching the document is deferred until the gesture ends. */
     if (!editor->drag.is_dragging || structure == NULL) {
         return;
     }

@@ -22,6 +22,8 @@ typedef struct SsWeightedEdgeRef {
     double weight;
 } SsWeightedEdgeRef;
 
+/* Kruskal needs edges sorted by weight. Ties fall back to indices so the
+ * resulting order is deterministic and test-friendly. */
 static int ss_weighted_edge_compare(const void *left, const void *right)
 {
     const SsWeightedEdgeRef *a = (const SsWeightedEdgeRef *) left;
@@ -50,6 +52,7 @@ static int ss_weighted_edge_compare(const void *left, const void *right)
 
 static int ss_dsu_find(int *parent, int index)
 {
+    /* Classic disjoint-set "find with path compression". */
     if (parent[index] != index) {
         parent[index] = ss_dsu_find(parent, parent[index]);
     }
@@ -61,6 +64,8 @@ static int ss_dsu_union(int *parent, int *rank, int left, int right)
     int root_left = ss_dsu_find(parent, left);
     int root_right = ss_dsu_find(parent, right);
 
+    /* Classic union-by-rank. Keeping this local avoids depending on an extra
+     * generic data-structure module for one transformation feature. */
     if (root_left == root_right) {
         return 0;
     }
@@ -99,6 +104,8 @@ static void ss_graph_layout_pivot(const SsStructure *structure, const char *pivo
     double sum_center_x = 0.0;
     double sum_center_y = 0.0;
 
+    /* Graph rotations can use a selected node as pivot; otherwise they rotate
+     * around the centroid of the current visual arrangement. */
     if (pivot_x != NULL) {
         *pivot_x = 0.0;
     }
@@ -146,6 +153,8 @@ static void ss_graph_layout_shift_to_positive_space(SsStructure *structure)
     double shift_x = 0.0;
     double shift_y = 0.0;
 
+    /* After rotation, nodes may drift into negative space. This helper
+     * recenters the result into a comfortable visible canvas area. */
     if (structure == NULL || structure->node_count == 0) {
         return;
     }
@@ -177,6 +186,8 @@ static void ss_graph_layout_shift_to_positive_space(SsStructure *structure)
 
 static void ss_tree_replace_parent_link(SsStructure *structure, SsNode *parent, const char *old_child_id, const char *new_child_id)
 {
+    /* Tree rotations need to rewire either a parent's child pointer or the
+     * structure root itself. This helper hides that branching detail. */
     if (structure == NULL) {
         return;
     }
@@ -195,6 +206,8 @@ static void ss_tree_replace_parent_link(SsStructure *structure, SsNode *parent, 
 
 static int ss_graph_tree_copy_nodes(const SsStructure *source, SsStructure *out_structure, SsError *error)
 {
+    /* Derived BFS/DFS/Prim/Kruskal trees begin by cloning the vertex set and
+     * then pruning unreachable or unused nodes after edges are chosen. */
     for (size_t index = 0; index < source->node_count; ++index) {
         const SsNode *source_node = &source->nodes[index];
         SsNode *node = ss_append_node_with_id(
@@ -250,6 +263,8 @@ static int ss_graph_tree_append_edge(
 
 static void ss_graph_tree_prune_unreachable(SsStructure *structure)
 {
+    /* The derived tree should contain only nodes that actually belong to the
+     * traversal/result. Unconnected leftovers are removed after edge building. */
     if (structure == NULL) {
         return;
     }

@@ -17,6 +17,9 @@ const double SS_NODE_WIDTH = 86.0;
 const double SS_NODE_HEIGHT = 44.0;
 const double SS_ROUND_NODE_SIZE = 74.0;
 
+/* These helpers keep string assembly explicit and bounded. In C this matters:
+ * the rest of the project can safely compose labels/messages without repeating
+ * the same manual length checks everywhere. */
 static void ss_append_limited_text(char *buffer, size_t capacity, const char *text)
 {
     size_t length;
@@ -35,6 +38,8 @@ static void ss_append_limited_text(char *buffer, size_t capacity, const char *te
 
 const char *ss_node_kind_for_variant(SsVariant variant)
 {
+    /* kind is a semantic rendering hint. It is not the same thing as variant:
+     * several variants can share one kind because they draw similarly. */
     switch (variant) {
         case SS_VARIANT_VECTOR:
             return "vector_cell";
@@ -66,6 +71,8 @@ const char *ss_node_kind_for_variant(SsVariant variant)
 
 int ss_variant_prefers_round_nodes(SsVariant variant)
 {
+    /* Visual preferences stay near the shared model helpers because several
+     * layers need the same answer: layout, render and insertion defaults. */
     switch (variant) {
         case SS_VARIANT_BINARY_TREE:
         case SS_VARIANT_BST:
@@ -103,6 +110,9 @@ const SsNode *ss_structure_find_node_by_token_const(const SsStructure *structure
     const SsNode *match = NULL;
     size_t index;
 
+    /* Token resolution is intentionally user-friendly: a field can reference a
+     * node by technical ID, visible label or visible value. Ambiguity is
+     * reported as an error instead of silently choosing the wrong node. */
     if (error != NULL) {
         ss_error_clear(error);
     }
@@ -159,6 +169,8 @@ int ss_find_edge_index(const SsStructure *structure, const char *edge_id)
 
 int ss_reserve_node(SsStructure *structure, size_t required, SsError *error)
 {
+    /* Reserve helpers centralize allocation failures so command code can stay
+     * focused on semantics instead of raw realloc bookkeeping. */
     if (!ss_array_reserve((void **) &structure->nodes, sizeof(*structure->nodes), &structure->node_capacity, required)) {
         ss_error_set(error, SS_ERROR_MEMORY, "No se pudo reservar memoria para nodos.");
         return 0;
@@ -177,6 +189,8 @@ static int ss_reserve_edge(SsStructure *structure, size_t required, SsError *err
 
 void ss_assign_node_defaults(SsNode *node, const char *kind, const char *value)
 {
+    /* Every new node starts from one canonical initialization path. That keeps
+     * freshly inserted entities predictable before a variant customizes them. */
     memset(node, 0, sizeof(*node));
     ss_generate_id("node", node->id, sizeof(node->id));
     ss_str_copy(node->kind, sizeof(node->kind), kind);
@@ -201,6 +215,8 @@ void ss_format_priority_label(SsNode *node)
 {
     char priority_buffer[24];
 
+    /* Priority queues need the priority visible in the label so the student
+     * can compare queue order with the stored payload directly on the canvas. */
     if (node == NULL) {
         return;
     }

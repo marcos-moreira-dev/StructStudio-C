@@ -57,6 +57,8 @@ static double ss_transition_progress(const SsEditorState *editor)
 {
     double t;
 
+    /* The interpolation uses smoothstep instead of a linear ramp so nodes ease
+     * in/out and feel less mechanical while still remaining deterministic. */
     if (editor == NULL || !editor->transition.active || editor->transition.duration_ms <= 0) {
         return 1.0;
     }
@@ -84,6 +86,8 @@ static SsRect ss_entry_rect_for_node(const SsStructure *structure, const SsNode 
     double shrink_x;
     double shrink_y;
 
+    /* New nodes animate from a slightly displaced rectangle rather than from
+     * nowhere. That gives insertions a readable "arrival" motion. */
     rect = node->visual;
     shrink_x = rect.width * 0.08;
     shrink_y = rect.height * 0.08;
@@ -144,6 +148,8 @@ void ss_editor_layout_snapshot_capture(const SsStructure *structure, SsLayoutSna
 {
     size_t index;
 
+    /* A layout snapshot captures only geometry, not semantic data. That is all
+     * the animation system needs to interpolate between two states. */
     if (snapshot == NULL) {
         return;
     }
@@ -191,6 +197,8 @@ void ss_editor_begin_layout_transition(SsEditorState *editor, const SsStructure 
     size_t animated_count = 0;
     SsAnimatedNode *nodes;
 
+    /* Only nodes whose geometry actually changed are added to the transition.
+     * That keeps animation memory and per-frame interpolation smaller. */
     if (editor == NULL) {
         return;
     }

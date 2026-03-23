@@ -1,3 +1,9 @@
+/*
+ * StructStudio C
+ * --------------
+ * Persistence boundary for JSON documents.
+ */
+
 #ifndef SS_PERSISTENCE_DOCUMENT_IO_H
 #define SS_PERSISTENCE_DOCUMENT_IO_H
 

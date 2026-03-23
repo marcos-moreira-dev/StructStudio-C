@@ -1,3 +1,12 @@
+/*
+ * StructStudio C
+ * --------------
+ * Core data model.
+ *
+ * The model is intentionally UI-agnostic: documents, structures, nodes and
+ * edges can be saved, cloned, validated and tested without any widget code.
+ */
+
 #ifndef SS_CORE_MODEL_H
 #define SS_CORE_MODEL_H
 
@@ -6,6 +15,8 @@
 #include "common/error.h"
 #include "common/util.h"
 
+/* Families are broad categories used by render/layout/theory code to make
+ * coarse decisions without listing every specific variant each time. */
 typedef enum SsFamily {
     SS_FAMILY_VECTOR = 0,
     SS_FAMILY_LIST,
@@ -18,6 +29,7 @@ typedef enum SsFamily {
     SS_FAMILY_GRAPH
 } SsFamily;
 
+/* Variants are the concrete TDAs shown to the user in the application. */
 typedef enum SsVariant {
     SS_VARIANT_VECTOR = 0,
     SS_VARIANT_SINGLY_LINKED_LIST,
@@ -41,6 +53,8 @@ typedef enum SsVariant {
     SS_VARIANT_COUNT
 } SsVariant;
 
+/* Descriptors form a small catalog of capabilities and default labels for
+ * each variant. The UI reads them to avoid hardcoding strings everywhere. */
 typedef struct SsVariantDescriptor {
     SsVariant variant;
     SsFamily family;
@@ -53,6 +67,8 @@ typedef struct SsVariantDescriptor {
     int supports_manual_drag;
 } SsVariantDescriptor;
 
+/* Geometry is persisted because StructStudio is both an editor and a study
+ * tool: a reopened document should preserve its educational arrangement. */
 typedef struct SsRect {
     double x;
     double y;
@@ -60,6 +76,8 @@ typedef struct SsRect {
     double height;
 } SsRect;
 
+/* NodeData stores semantic helper fields shared across many TDAs. Different
+ * variants reuse different fields, which is why the node model is generic. */
 typedef struct SsNodeData {
     char key[SS_LABEL_CAPACITY];
     char aux_text[SS_VALUE_CAPACITY];
@@ -70,6 +88,8 @@ typedef struct SsNodeData {
     int index_hint;
 } SsNodeData;
 
+/* A node mixes persistent data with visual placement. That may look unusual in
+ * pure domain modeling, but it makes animation/export/save behavior coherent. */
 typedef struct SsNode {
     char id[SS_ID_CAPACITY];
     char kind[SS_KIND_CAPACITY];
@@ -80,6 +100,8 @@ typedef struct SsNode {
     SsNodeData data;
 } SsNode;
 
+/* EdgeVisual answers "how should this relationship be painted?" while the edge
+ * itself answers "what relationship exists semantically?". */
 typedef struct SsEdgeVisual {
     int show_arrow;
     int show_weight;
@@ -112,6 +134,7 @@ typedef struct SsStructureVisualState {
     int show_indices;
 } SsStructureVisualState;
 
+/* Structures are the actual tabs/documents the user manipulates on screen. */
 typedef struct SsStructure {
     char id[SS_ID_CAPACITY];
     SsFamily family;
@@ -144,6 +167,7 @@ typedef struct SsViewState {
     double canvas_offset_y;
 } SsViewState;
 
+/* The document is the long-lived root object of the session. */
 typedef struct SsDocument {
     SsDocumentMetadata metadata;
     SsViewState view_state;

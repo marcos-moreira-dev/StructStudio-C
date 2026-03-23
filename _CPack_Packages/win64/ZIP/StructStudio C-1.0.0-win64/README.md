@@ -275,6 +275,7 @@ Si quieres entender bien el sistema, estas son las lecturas mas utiles:
 
 - [Guia completa de capacidades](docs/25_system_capabilities_guide.md)
 - [Auditoria de deuda tecnica](docs/26_technical_debt_audit.md)
+- [Guia de estudio del codigo](docs/28_code_study_guide.md)
 - [Guia de implementacion](docs/13_implementation_guide.md)
 - [UI y experiencia de uso](docs/02_ui_ux.md)
 - [Arquitectura](docs/03_architecture.md)
@@ -285,6 +286,7 @@ Si quieres entender bien el sistema, estas son las lecturas mas utiles:
 - [DPI y nitidez en Windows](docs/23_windows_dpi_and_visual_sharpness.md)
 - [Runner de build, tests y logs](docs/24_run_pipeline.md)
 - [Empaquetado e instalador](docs/27_installer_packaging.md)
+- [Guia de estudio del instalador](docs/29_installer_study_guide.md)
 
 ## Resumen corto
 
